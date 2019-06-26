@@ -22,7 +22,7 @@ output:
 </style>
 
 ```{r}
-knitr::opts_chunk$set(warning=FALSE, message = FALSE)
+knitr::opts_chunk$set(warning=TRUE, message = FALSE)
 ```
 
 ```{r}
@@ -249,14 +249,20 @@ e2<-within(e2, Organization <- relevel(Organization, ref = 1))
 pre.rt.mod<-lmer(PrepTime~SeqType*Organization*rep.c+(1|SUBJECT), data = e2, REML=F, na.action="na.omit",
                  contrasts=list(SeqType="contr.sum", Organization="contr.sum"))
 tab_model(pre.rt.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
-
+```
+<br>
+3-way interaction, split on organization
+```{r}
 # 3-way interaction, split on organization
 pre.rt.mod2<-lmer(PrepTime~SeqType*rep.c+(1|SUBJECT), data = e2[e2$Organization=="No",], REML=F,
                   na.action="na.omit", contrasts=list(SeqType="contr.sum"))
 pre.rt.mod3<-lmer(PrepTime~SeqType*rep.c+(1|SUBJECT), data = e2[e2$Organization=="Yes",], REML=F,
                   na.action="na.omit",contrasts=list(SeqType="contr.sum"))
 tab_model(pre.rt.mod2, pre.rt.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
-
+```
+<br>
+spliting the seq length * repetition interaction for the organized trials
+```{r}
 # spliting the seq length * repetition interaction for the organized trials
 pre.rt.mod4<-lmer(PrepTime~rep.c+(1|SUBJECT), data = e2[e2$Organization=="Yes" & e2$SeqType=="Short",], 
                   REML=F, na.action="na.omit")
@@ -265,6 +271,7 @@ pre.rt.mod5<-lmer(PrepTime~rep.c+(1|SUBJECT), data = e2[e2$Organization=="Yes" &
 tab_model(pre.rt.mod4, pre.rt.mod5, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
 ```
 
+<br>
 Individuals spend less time prior to the search phase of the task if they chose not to organize their environment than if they did (b = -6.60, 95% CI [-7.10 -6.09], t = 25.45, p < .001).
 
 Individuals spent less time when encountered with short than long search sequences (b = -2.34, 95% CI [-2.71, -1.97], t = 12.49, p < .001).
@@ -320,14 +327,20 @@ ggplot(graph2, aes(x=Repetition, y=dep.avg, colour=Organization, shape=SeqType, 
 post.rt.mod<-lmer(SearchTimeAvg~SeqType*Organization*rep.c+(1|SUBJECT), data = e2, REML=F, na.action="na.omit",
                   contrasts=list(SeqType="contr.sum", Organization="contr.sum"))
 tab_model(post.rt.mod, transform = NULL, show.stat = T, p.val = "wald", digits = 3, digits.p = 2)
-
+```
+<br>
+3 way interaction split on organization
+```{r}
 # 3 way interaction split on organization
 post.rt.mod2<-lmer(SearchTimeAvg~SeqType*rep.c+(1|SUBJECT), data = e2[e2$Organization=="Yes",], 
                    REML=F, na.action="na.omit", contrasts = list(SeqType="contr.sum"))
 post.rt.mod3<-lmer(SearchTimeAvg~SeqType*rep.c+(1|SUBJECT), data = e2[e2$Organization=="No",], 
                    REML=F, na.action="na.omit", contrasts = list(SeqType="contr.sum"))
 tab_model(post.rt.mod2, post.rt.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
-
+```
+<br>
+breaking down previous two-way interaction
+```{r}
 # breaking down previous two-way interaction
 post.rt.mod4<-lmer(SearchTimeAvg~rep.c+(1|SUBJECT), data = e2[e2$Organization=="No" & e2$SeqType=="Short",],
                    REML=F, na.action="na.omit")
@@ -336,6 +349,7 @@ post.rt.mod5<-lmer(SearchTimeAvg~rep.c+(1|SUBJECT), data = e2[e2$Organization=="
 tab_model(post.rt.mod4, post.rt.mod5, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
 ```
 
+<br>
 When individuals did not organized the task environment prior to search, they spend more time searching for each target item on average than trials where they organize the environment (b = .20, 95% CI [.18, .23], t = 14.93, p < .001).
 
 Overall, it takes individuals less time to search for each target when they are presented in a short sequence than a long one (b = -.11, 95% CI [-.13, -.10], t = 12.10, p < .001).
@@ -395,7 +409,9 @@ ggplot(graph2, aes(x=Repetition, y=dep.avg, colour=SeqType, group=SeqType))+
 moves.mod<-glmer(Org.Num ~ SeqType*rep.c + (1 | SUBJECT), data = e2, family = binomial,
                  contrasts = list (SeqType="contr.sum")) 
 tab_model(moves.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
-
+```
+<br>
+```{r}
 # two-way interaction
 moves.mod2<-glmer(Org.Num ~ rep.c + (1 | SUBJECT), data = e2[e2$SeqType=="Short",], family = binomial) 
 moves.mod3<-glmer(Org.Num ~ rep.c + (1 | SUBJECT), data = e2[e2$SeqType=="Long",], family = binomial) 
@@ -403,6 +419,7 @@ tab_model(moves.mod2, moves.mod3, transform = NULL, show.stat = T, p.val = "wald
 
 ```
 
+<br>
 Overall, sequence length was not a significant predictor of participants' likelihood to engage in organization (b = -.03, 95% CI [-.18, .12], z = .44, p = .66).
 
 As repetition length increased, likelihood of engaging in organization decreased (b = -.16, 95% CI [-.28, -.04], t= 2.62, p = .01). 
@@ -501,12 +518,12 @@ moves.mod4<-glmer(Org.Num ~ trial.c*SeqType*rep.c+(1|SUBJECT), data = e2, family
 tab_model(moves.mod4, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
 ```
 
-
+<br>
 When number of trials was added to the model, it was negatively associated with individuals' likelihood to organize their task environments (b = -.05, 95% CI [-.06, -.04], t = 7.88, p < .001). No additional factors or interactions were significant (all p > .09)
 
 
 
-#### Item Location (Tria)
+#### Item Location (Trial)
 
 ```{r}
 graph1<-ddply(e2.org, .(SUBJECT, Arrangement, SeqType, Repetition), summarize, 
@@ -550,21 +567,30 @@ e2.org.sub<-subset(e2.org, Arrangement!="Unorganized")
 arr.mod<-lmer(Distance~SeqType*Arrangement*rep.c+(1|SUBJECT), data = e2.org.sub, REML=F, na.action="na.omit",
               contrasts=list(SeqType="contr.sum", Arrangement="contr.sum"))
 tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
-
+```
+<br>
+seq length * arrangement:
+```{r}
 # seq length * arrangement
 arr.mod2<-lmer(Distance~SeqType+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangement=="Pre-Organization",], 
                REML=F, na.action="na.omit", contrasts = list(SeqType="contr.sum"))
 arr.mod3<-lmer(Distance~SeqType+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangement=="Post-Organization",], 
                REML=F, na.action="na.omit", contrasts = list(SeqType="contr.sum"))
 tab_model(arr.mod2, arr.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
-
+```
+<br>
+seq length * repetition:
+```{r}
 # seq length * repetition
 arr.mod4<-lmer(Distance~rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$SeqType=="Short",], 
                REML=F, na.action="na.omit")
 arr.mod5<-lmer(Distance~rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$SeqType=="Long",], 
                REML=F, na.action="na.omit")
 tab_model(arr.mod4, arr.mod5, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
-
+```
+<br>
+arrangement * rep.c:
+```{r}
 # arrangement * rep.c
 arr.mod6<-lmer(Distance~rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangement=="Pre-Organization",], 
                REML=F, na.action="na.omit")
@@ -573,6 +599,7 @@ arr.mod7<-lmer(Distance~rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangem
 tab_model(arr.mod6, arr.mod7, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
 ```
 
+<br>
 (pre- vs post-organization)
 
 Items were located further away from the goal location pre-organization and moved closer post-organization (b = 173.99, 95% CI [167.41, 180.57], t = 51.83, p < .001)
@@ -703,7 +730,7 @@ ggplot(graph2, aes(x=Repetition, y=dep.avg, colour=Arrangement, group=Arrangemen
   scale_y_continuous("Distance", limits=c(0, 720), breaks=seq(0, 1000, 100))
 ```
 
-
+<br>
 (unorganized vs pre-organized trials)
 
 ```{r}
@@ -711,27 +738,32 @@ e2.org.sub<-subset(e2.org, Arrangement!="Post-Organization")
 arr.mod<-lmer(Distance~SeqType*Arrangement*rep.c+(1|SUBJECT), data = e2.org.sub, REML=F, na.action="na.omit", 
               contrasts = list(SeqType="contr.sum", Arrangement="contr.sum"))
 tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 3)
-
+```
+<br>
+breaking down the 3-way interaction
+```{r}
 # breaking down the 3-way interaction
 arr.mod2<-lmer(Distance~SeqType*rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangement=="Unorganized",], 
-               REML=F, na.action="na.omit")
+               REML=F, na.action="na.omit", contrasts=list(SeqType="contr.sum"))
 
 arr.mod3<-lmer(Distance~SeqType*rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangement=="Pre-Organization",],
                REML=F, na.action="na.omit", contrasts = list(SeqType="contr.sum"))
+
 # had to up the iteration because of convergence issue
-ss <- getME(arr.mod2,c("theta","fixef"))
-arr.mod3.2 <- update(arr.mod2, start=ss, control=lmerControl(optCtrl=list(maxfun=2e4)))
+ss <- getME(arr.mod3,c("theta","fixef"))
+arr.mod3.2 <- update(arr.mod3, start=ss, control=lmerControl(optCtrl=list(maxfun=2e4)))
 
 tab_model(arr.mod2, arr.mod3.2, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
 ```
 
+<br>
 Overall, the initial average item distance to the goal location was closer for trials in which items were not moved compared to initial item distances for items that were later moved  (b = -47.74, 95% CI [-58.00, -37.48], t = 9.12, p < .001).
 
 There was a two-way interaction between organizational state and sequence length (b = -9.23, 95% I [-17.12, -1.33], t = 2.29, p = .02), as well as a two-way interaction between organizational state and repetition (b = -20.47, 95% CI [-26.79, -14.15], t = 6.35, p < .001).
 
-Importantly, there was a significant three-way interaction (b = -6.49, 95% CI [-12.73, -.07], t = 1.98, p = .047). To further understand this interaction, follow-up analyses were conducted at each level of organizational state.
+Importantly, there was a significant three-way interaction (b = -6.40, 95% CI [-12.73, -.07], t = 1.98, p = .047). To further understand this interaction, follow-up analyses were conducted at each level of organizational state.
 
-For trials wherein organization was not attempted, the initial location of items did not differ as a function of sequence length (b = 17.73, 95% CI [-8.71, 36.18], t = 1.20, p = .23), but increased repetition led to a decrease in average item distance (b = -31.21, 95% CI [-43.60, -18.83], t = 4.94, p < .001). On the other hand, when items were later organized, average item distance to the goal location was shorter when presented with long target sequences than short ones (b = -22.06, 95% CI [-43.93, -.19], t = 1.98, p = .05), and was positively related to repetition length (b = 21.12, 95% CI [8.22, 34.02], t = 3.21, p < .001). There were no significant two-way interactions in either case (all p > .14)
+For trials wherein organization was not attempted, the initial location of items did not differ as a function of sequence length (b = -6.87, 95% CI [-18.09, 4.36], t = 1.20, p = .23), but increased repetition led to a decrease in average item distance (b = -24.55, 95% CI [-33.39, -15.71], t = 5.44, p < .001). On the other hand, when items were later organized, average item distance to the goal location was shorter when presented with long target sequences than short ones (b = 11.03, 95% CI [.09, 21.97], t = 1.98, p = .05), and was positively related to repetition length (b = 15.93, 95% CI [7.05, 24.82], t = 3.51, p < .001). There were no significant two-way interactions in either case (all p > .14)
 
 
 
@@ -741,33 +773,40 @@ For trials wherein organization was not attempted, the initial location of items
 
 ```{r}
 e2.org.sub<-subset(e2.org, Arrangement!="Pre-Organization")
-arr.mod<-lmer(Distance~SeqType*Arrangement*rep.c+(1|SUBJECT), data = e2.org.sub, REML=F, na.action="na.omit")
+arr.mod<-lmer(Distance~SeqType*Arrangement*rep.c+(1|SUBJECT), data = e2.org.sub, REML=F, na.action="na.omit",
+              contrasts = list(SeqType="contr.sum", Arrangement="contr.sum"))
 tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
 ```
-
-Post-organization, items were placed much closer to the goal location compared to trials where organization was not attempted (b = -212.52, 95% CI [-234.80, -190.24], t = 18.70, p < .001).
-
-Increased repetition length was associated with a decrease in average item distance to the goal lcoation (b = -30.81, 95% CI [-41.10, -20.51], t = 5.87, p < .001).
-
-There was a two-way interaction between organization (unorganized vs. post-organization) and repetition length (b = 22.16, 95% CI [7.30, 37.02], t = 2.92, p < .001). 
-
-More importantly, there was a significant three-way interaction (b = -30.58, 95% CI [-51.48, 9.68], t = 2.87, p < .001). For trials wherein organization was not attempted, the initial location of items did not differ as a function of sequence length (b = 17.73, 95% CI [-8.71, 36.18], t = 1.20, p = .23), but increased repetition led to a decrease in average item distance (b = -31.21, 95% CI [-43.60, -18.83], t = 4.94, p < .001). On the other hand, both sequence length (b = 33.31, 95% CI [20.34, 46.28], t = 5.03, p < .001) and repetition (b = -7.63, 95% CI [-15.27, - .003], t = 1.96, p = .05) were both significant predictors of average item distance.
-
-
+<br>
+breaking down 3-way interaction split on organizational state
 ```{r}
-arr.mod2<-lmer(Distance~SeqType*rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangement=="Unorganized",], REML=F, na.action="na.omit")
-arr.mod3<-lmer(Distance~SeqType*rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangement=="Post-Organization",], REML=F, na.action="na.omit")
+# breaking down 3-way interaction split on organizational state
+arr.mod2<-lmer(Distance~SeqType*rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangement=="Unorganized",], 
+               REML=F, na.action="na.omit", contrasts = list(SeqType="contr.sum"))
+arr.mod3<-lmer(Distance~SeqType*rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangement=="Post-Organization",],
+               REML=F, na.action="na.omit", contrasts = list(SeqType="contr.sum"))
 tab_model(arr.mod2, arr.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
-
 ```
-
-More importantly, there was also a two-way interaction between repetition and sequence length (b = -18.20, 95% CI [-28.74, -7.65], t = 3.38, p < .001). Specifically, with short target sequences, repetition length did not predict average item distance (b = 7.25, 95% CI [-15.80, 1.29], t = 1.66, p < .001), where as repetition was negatively associated with item distance for long target sequences (b = -26.48, 95% CI [-32.89, -20.07], t = 8.10, p < .001).
-
+<br>
+breaking down 2-way interaction in post-organization condition
 ```{r}
+# breaking down 2-way interaction in post-organization condition
 arr.mod4<-lmer(Distance~rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangement=="Post-Organization" & e2.org.sub$SeqType=="Short",], REML=F, na.action="na.omit")
 arr.mod5<-lmer(Distance~rep.c+(1|SUBJECT), data = e2.org.sub[e2.org.sub$Arrangement=="Post-Organization" & e2.org.sub$SeqType=="Long",], REML=F, na.action="na.omit")
 tab_model(arr.mod4, arr.mod5, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+
 ```
+
+<br>
+In trials where organization was not attempted, items were placed placed further from the goal location compared to trials where items were moved, post-organization (b = 101.25, 95% CI [92.21, 110.30], t = 21.95, p < .001).
+
+Target items were placed closer to the goal location for trials with short search sequences than long ones (b = --13.11, 95% CI [-19.58, -6.64], t = 3.97, p < .001).
+
+Item distance decreased as the number of repeated target items in a sequence increased (b = -21.41, 95% CI [-26.60, -16.22], t = -8.09, p < .001).
+
+More importantly, there was a significant three-way interaction (b = -7.64, 95% CI [-12.87, -2.42], t = 2.87, p < .001). For trials wherein organization was not attempted, the initial location of items did not differ as a function of sequence length (b = -6.87, 95% CI [-18.09, 4.36], t = 1.20, p = .23), but increased repetition led to a decrease in average item distance (b = -24.55, 95% CI [-33.39, -15.71], t = 5.44, p < .001). On the other hand, both sequence length (b = -16.65, 95% CI [-23.14, -10.17], t = 5.03, p < .001) and repetition (b = -16.73, 95% CI [-21.99, -11.48], t = 6.24, p = .05) were both significant predictors of average item distance. There was also a two-way interaction between repetition and sequence length (b = 9.10, 95% CI [3.83, 14.37], t = 3.38, p < .001). Specifically, with short target sequences, repetition length did not predict average item distance (b = -7.25, 95% CI [-15.80, 1.29], t = 1.66, p < .001), where as repetition was negatively associated with item distance for long target sequences (b = -26.48, 95% CI [-32.89, -20.07], t = 8.10, p < .001).
+
+
 
 ### Organizational Moves: Item-Level Organization
 
@@ -811,3 +850,851 @@ ggplot(graph2, aes(x=Repetition, y=dep.avg, colour=SeqType, group=SeqType))+
   scale_x_discrete("Repetition Length")+
   scale_y_continuous("Proportion of Items Moved", limits=c(0, 1))
 ```
+
+```{r}
+moves.mod<-glmer(Move.Num ~ SeqType*rep.c + (1 | SUBJECT), data = item2, family = binomial, 
+                  contrasts = list(SeqType="contr.sum"))
+tab_model(moves.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+breaking down the two-way interaction 
+```{r}
+# breaking down the two-way interaction 
+moves.mod2<-glmer(Move.Num ~ rep.c + (1 | SUBJECT), data = item2[item2$SeqType=="Short", ], family = binomial)
+moves.mod3<-glmer(Move.Num ~ rep.c + (1 | SUBJECT), data = item2[item2$SeqType=="Long", ], family = binomial)
+
+tab_model(moves.mod2, moves.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+
+```
+
+<br>
+Individuals are more likely to organize given items when they were presented among a short rather than long search sequence (b = .26, 95% CI [.18, .34], z = 6.18, p < .001). 
+
+However, this was qualified by a two-way interaction between sequence length and repetition (b = -.23, 95% CI [-.31, -.15], z = 5.72, p < .001). Specifically, for short sequence trials, individuals were less likely to organize their environments as repetition length increased (b = -.20, 95% CI [-.33, -.07], z = 3.05, p < .001). On the other hand, the likelihood of engaging in organization *increased* as repetition length increased when individuals encountered long search sequences (b = .27, 95% CI [.18, .37], z = 5.74, p < .001).
+
+
+```{r}
+graph1<-ddply(item2, .(SUBJECT, SeqType, TRIAL), summarize, 
+              mean=mean(Move.Num)
+              )
+
+graph2<-ddply(graph1, .(SeqType, TRIAL), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+ggplot(graph2, aes(x=TRIAL, y=dep.avg, colour=SeqType))+
+  geom_point(size=3, shape=16, alpha = .6, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray70"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray70"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="#432620"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent")
+  )+
+  ggtitle("proportion individuals chose to organize task space as a function of \nsequence type")+
+  # geom_vline(xintercept = 6, linetype="dotted")+
+  scale_colour_manual("Sequence\nLength", values=wes_palette("Moonrise3", n=2))+
+  scale_x_continuous("Trials")+
+  scale_y_continuous("Proportion of Trials Where Organization Occured", limits=c(0, 1.49))
+
+
+```
+
+
+```{r}
+moves.mod<-glmer(Move.Num ~ trial.c*SeqType*rep.c + (1 | SUBJECT), data = item2, family = binomial, 
+                  contrasts = list(SeqType="contr.sum"))
+tab_model(moves.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+
+<br>
+When number of trials is added to the model, the only additional significant predictor is trial number itself (b = -.03, 95% CI [-.04, -.03], z = 10.14, p < .001)
+
+No other additional main effects or interactions were significant (all p < .31).
+
+#### Item Location
+
+```{r}
+# graph:
+graph1<-ddply(item2.org, .(SUBJECT, Arrangement, SeqType, Repetition), summarize, 
+              mean=mean(Distance)
+              )
+
+graph2<-ddply(graph1, .(Arrangement, SeqType, Repetition), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+graph2$Repetition=factor(graph2$Repetition)
+
+ggplot(graph2, aes(x=Repetition, y=dep.avg, shape=SeqType, linetype=SeqType, colour=Arrangement, group=interaction(Arrangement, SeqType)))+
+  geom_point(size=3, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  geom_line()+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray70"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray70"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="#432620"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent")
+  )+
+  ggtitle("item location change as a function of sequence type + \ndecision to organize")+
+  scale_shape_manual(values=c(16,1))+
+  scale_colour_manual("Item Movement", values=wes_palette(n=3, name="GrandBudapest1"))+
+  scale_x_discrete("Length of Target Sequence")+
+  scale_y_continuous("Distance", limits=c(0, 750), breaks=seq(0, 1000, 100))
+```
+
+<br>
+(pre- vs post-movement)
+
+```{r}
+item2.sub<-subset(item2.org, Arrangement!="Unmoved")
+arr.mod<-lmer(Distance~SeqType*Arrangement*rep.c +(1|SUBJECT), data = item2.sub, REML=F, na.action="na.omit", 
+               contrasts = list(SeqType="contr.sum", Arrangement="contr.sum"))
+tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 3)
+```
+<br>
+breaking down the 3 way interaction
+```{r}
+# breaking down the 3 way interaction
+arr.mod2<-lmer(Distance~SeqType*rep.c +(1|SUBJECT), data = item2.sub[item2.sub$Arrangement=="Pre-Movement",],
+              REML=F, na.action="na.omit", contrasts = list(SeqType="contr.sum"))
+arr.mod3<-lmer(Distance~SeqType*rep.c +(1|SUBJECT), data = item2.sub[item2.sub$Arrangement=="Post-Movement",],
+              REML=F, na.action="na.omit", contrasts = list(SeqType="contr.sum"))
+tab_model(arr.mod2, arr.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+breaking down the 2-way interaction for the post-movement condition
+```{r}
+# breaking down the 2-way interaction for the post-movement condition
+
+arr.mod4<-lmer(Distance~rep.c +(1|SUBJECT), data = item2.sub[item2.sub$Arrangement=="Post-Movement" & item2.sub$SeqType=="Short",], REML=F, na.action="na.omit")
+arr.mod5<-lmer(Distance~rep.c +(1|SUBJECT), data = item2.sub[item2.sub$Arrangement=="Post-Movement" & item2.sub$SeqType=="Long",], REML=F, na.action="na.omit")
+
+tab_model(arr.mod4, arr.mod5, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+
+```
+
+<br>
+Item distance was first examined only for target items that were later moved.
+
+Item distance to the goal location was shorter for target items in short search sequences than long ones (b = -9.34, 95% CI [-14.81, -3.86], t = 3.34, p < .001). 
+
+Item distance pre-organization was further than post-organization (b = 199.46, 95% CI [194.07, 204.84], t = 72.59, p < .001). 
+
+There was a significant two-way interaction between organizational state (pre- vs post-movement) and sequence length (b = 11.54, 95% CI [6.15, 16.92], t = 4.20, p < .001), as well as a two-way interaction between organization state and repetition (b = 14.24, 95% CI [8.92, 19.55], t = 5.25, p < .001).
+
+Importantly, there was a significant three way interaction (b = -5.37, 95% CI [-10.68, -.05], t = 1.98, p = .048). Prior to items being moved, item distance was positively related to repetition (b = 12.03, 95% CI [2.36, 21.71], t = 2.44, p = .01). However, post-organization, this relation was negative, such that item distance decreased as the number of repeated items in a sequence increased (b = -17.05, 95% CI [-21.23, -12.88], t = 8.01, p < .001). In addition, items in short sequences were placed closer to the goal location than in long ones (b = -21.79, 95% CI [-26.06, -17.51], t = 9.99, p < .001). These main effects were further qualified by a significant two-way interaction (b = 8.41, 95% CI [4.24, 12.58], t = 3.96, p < .001). Specifically, the negative association between item distance and repetition length was much stronger for items in the long (b = -24.66, 95% CI [-29.87, -19.45], t = 9.28, p < .001) rather than short search sequences (b = -8.09, 95% CI [-13.67, -2.50], t = 2.84, p < .001).
+
+No other main effects or interactions were significant (all p > .37)
+
+<br>
+(unmoved vs pre-moved items)
+
+```{r}
+item2.sub<-subset(item2.org, Arrangement!="Post-Movement")
+arr.mod<-lmer(Distance~SeqType*Arrangement*rep.c +(1|SUBJECT), data = item2.sub, REML=F, na.action="na.omit", 
+               contrasts = list(SeqType="contr.sum", Arrangement="contr.sum"))
+tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+arrangement * repetition
+```{r}
+# 2-way interaction between arrangement * repetition
+arr.mod2<-lmer(Distance~rep.c +(1|SUBJECT), data = item2.sub[item2.sub$Arrangement=="Unmoved",],
+              REML=F, na.action="na.omit")
+arr.mod3<-lmer(Distance~rep.c +(1|SUBJECT), data = item2.sub[item2.sub$Arrangement=="Pre-Movement",],
+              REML=F, na.action="na.omit")
+tab_model(arr.mod2, arr.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+
+```
+
+<br>
+Unmoved items tended to be located closer to the goal location than items that were later moved (b = -96.58, 95% CI [-105.27, -87.88], t = 21.77, p < .001). 
+
+There was also a significant two-way interaction between whether items were moved and repetition length (b = -14.12, 95% CI [-2.20, 10.95], t = 4.20, p < .001). When items were unmoved, there was a significant negative relation between item distance and repetition (b = -18.18, 95% CI [-26.30, -10.07], t = 4.39, p < .001). However, when items were later moved, their initial placements had a positive relation with repetition (b = 13.82, 95% CI [4.76, 22.88], t = 2.99, p < .001).
+
+No other main effects or interactions were significant (all p > .19).
+
+
+
+<br>
+(unmoved vs. post-movement item distance)
+
+```{r}
+item2.sub<-subset(item2.org, Arrangement!="Pre-Movement")
+arr.mod<-lmer(Distance~SeqType*Arrangement*rep.c +(1|SUBJECT), data = item2.sub, REML=F, na.action="na.omit", 
+               contrasts = list(SeqType="contr.sum", Arrangement="contr.sum"))
+tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+arrangement * seq length
+```{r}
+# 2-way interaction between arrangement * seq length
+arr.mod2<-lmer(Distance~SeqType +(1|SUBJECT), data = item2.sub[item2.sub$Arrangement=="Unmoved",],
+              REML=F, na.action="na.omit", contrasts = list(SeqType="contr.sum"))
+arr.mod3<-lmer(Distance~SeqType +(1|SUBJECT), data = item2.sub[item2.sub$Arrangement=="Post-Movement",],
+              REML=F, na.action="na.omit", contrasts = list(SeqType="contr.sum"))
+tab_model(arr.mod2, arr.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+arrangement * repetition
+```{r}
+# 2-way interaction between arrangement * repetition
+arr.mod4<-lmer(Distance~rep.c +(1|SUBJECT), data = item2.sub[item2.sub$Arrangement=="Unmoved",],
+              REML=F, na.action="na.omit")
+arr.mod5<-lmer(Distance~rep.c +(1|SUBJECT), data = item2.sub[item2.sub$Arrangement=="Post-Movement",],
+              REML=F, na.action="na.omit")
+tab_model(arr.mod4, arr.mod5, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+
+```
+
+<br>
+Target items in short search sequences tended to be placed closer to the goal location than in long sequences (b = -15.87, 95% CI [-21.48, -10.26], t = 5.55, p < .001). 
+
+Unmoved items tended to be located further from the goal location than item locations after they were moved (b = 94.17, 95% CI [86.87, 101.48], t = 25.28, p < .001). 
+
+There was an overall negative relation between item distance and repetition such that as the number of repeated items in a sequence increased, item distance decreased (b = -18.13, 95% CI [-23.57, -12.68], t = 6.52, p < .001). 
+
+There was a significant two-way interaction between sequence length and organizational state (unmoved vs. post-movement items; b = 9.27, 95% CI [3.63, 14.92], t = 3.22, p < .001). Item distance did not differ as a function of sequence length for unmoved items (b = -6.96, 95% CI [-16.00, 2.07], t = 1.51, p = .13). However, post-movement, items in a short sequence tended to be placed closer than items in a long sequence (b = -20.07, 95% CI [-24.45, -15.69], t = 8.99, p < .001).
+
+There was also a significant two-way interaction between repetition and sequence length (b = 6.78, 95% CI [1.32, 12.23], t = 2.44, p = .01). Though an increase in the number of repeated items in a sequence was associated with a decrease in item distance overall, there was a smaller decrease for items in short sequences (b = -18.18, 95% CI [-26.30, -10.07], t = 4.39, p < .001) than those in long sequences (b = -18.27, 95% CI [-22.29, -14.25], t = 8.91, p < .001)
+
+No other interactions were significant (all p > .35)
+
+
+<br>
+<br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Combined Analysis
+
+The following analyses examines comparable trials/conditions across experiments 1 & 2
+
+```{r, message=F}
+sub<-subset(df, SEQ_LEN %in% c(4,8) & NUM_UNIQUE_IN_SEQ %in% c(2,4))
+sub$Experiment<-factor(recode(sub$Experiment, "'E1a'='E1';'E1b'='E1';'E2'='E2'"))
+sub$uniq.c <- sub$NUM_UNIQUE_IN_SEQ - mean(sub$NUM_UNIQUE_IN_SEQ)
+sub$rep.c<-sub$Repetition - mean(sub$Repetition)
+sub$trial.c<-sub$TRIAL - mean(sub$TRIAL)
+
+sub.org<-subset(df.org, SEQ_LEN %in% c(4,8) & NUM_UNIQUE_IN_SEQ %in% c(2,4))
+sub.org$Experiment<-factor(recode(sub.org$Experiment, "'E1a'='E1';'E1b'='E1';'E2'='E2'"))
+sub.org$uniq.c <- sub.org$NUM_UNIQUE_IN_SEQ - mean(sub.org$NUM_UNIQUE_IN_SEQ)
+sub.org$rep.c<-sub.org$Repetition - mean(sub.org$Repetition)
+sub.org$trial.c<-sub.org$TRIAL - mean(sub.org$TRIAL)
+
+sub.item<-subset(item, SEQ_LEN %in% c(4,8) & NUM_UNIQUE_IN_SEQ %in% c(2,4))
+sub.item$Experiment<-factor(recode(sub.item$Experiment, "'E1a'='E1';'E1b'='E1';'E2'='E2'"))
+sub.item$uniq.c <- sub.item$NUM_UNIQUE_IN_SEQ - mean(sub.item$NUM_UNIQUE_IN_SEQ)
+sub.item$rep.c<-sub.item$Repetition - mean(sub.item$Repetition)
+sub.item$trial.c<-sub.item$TRIAL - mean(sub.item$TRIAL)
+
+sub.item.org<-subset(item.org, SEQ_LEN %in% c(4,8) & NUM_UNIQUE_IN_SEQ %in% c(2,4))
+sub.item.org$Experiment<-factor(recode(sub.item.org$Experiment, "'E1a'='E1';'E1b'='E1';'E2'='E2'"))
+sub.item.org$uniq.c <- sub.item.org$NUM_UNIQUE_IN_SEQ - mean(sub.item.org$NUM_UNIQUE_IN_SEQ)
+sub.item.org$rep.c<-sub.item.org$Repetition - mean(sub.item.org$Repetition)
+sub.item.org$trial.c<-sub.item.org$TRIAL - mean(sub.item.org$TRIAL)
+```
+
+### Performance: Response Time
+
+#### How much time did participants spent during the pre-search phase of the task? 
+
+```{r}
+graph1<-ddply(sub, .(SUBJECT, SeqType, Organization, Experiment), summarize, 
+              mean=mean(PrepTime)
+              )
+
+graph2<-ddply(graph1, .(SeqType, Organization, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+# print(graph2)
+
+
+ggplot(graph2, aes(x=SeqType, y=dep.avg, colour=Organization))+
+  geom_point(size=3, shape=16, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  facet_grid(.~Experiment)+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray70"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray70"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="#432620"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent")
+  )+
+  ggtitle("pre-search task time as a function of sequence type + \nwhether items were organized")+
+  scale_colour_manual(values=wes_palette(n=2, name="Moonrise2"))+
+  scale_x_discrete("Length of Target Sequence")+
+  scale_y_continuous("Pre-Search Task Time (seconds)", breaks=seq(0, 30, 2))
+
+```
+
+```{r}
+pre.rt.mod<-lmer(PrepTime~SeqType*Organization*Experiment+(1|SUBJECT), data = sub, REML=F, na.action="na.omit",
+                 contrasts=list(SeqType="contr.sum", Organization="contr.sum", Experiment="contr.sum"))
+tab_model(pre.rt.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+Prep time was shorter for trials in which organization was not attempted than trials where individuals did organize their task space (b = -5.71, 95% CI [-6.08, -5.34], t = 30.44, p < .001)
+
+No other main effects or interactions were significant (all p > .25).
+
+
+#### Does average search time differ as a function of sequence type
+
+```{r}
+graph1<-ddply(sub, .(SUBJECT, SeqType, Organization, Experiment), summarize, 
+              mean=mean(SearchTimeAvg)
+              )
+
+graph2<-ddply(graph1, .(SeqType, Organization, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+ggplot(graph2, aes(x=SeqType, y=dep.avg, colour=Organization))+
+  geom_point(size=3, shape=16, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  facet_grid(.~Experiment)+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray70"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray70"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="#432620"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent")
+  )+
+  ggtitle("average search time per target item as a function of sequence type + \nwhether items were organized")+
+  scale_colour_manual(values=wes_palette(n=2, name="Moonrise2"))+
+  scale_x_discrete("Length of Target Sequence")+
+  scale_y_continuous("Average Search Time Per Target Item (seconds)", breaks=seq(0, 10, 0.5), limits=c(0, 2.8))
+```
+
+```{r}
+post.rt.mod<-lmer(SearchTimeAvg~SeqType*Organization*Experiment + (1|SUBJECT), data = sub, REML=F, na.action="na.omit", 
+                  contrasts=list(SeqType="contr.sum", Organization="contr.sum", Experiment="contr.sum"))
+tab_model(post.rt.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+seq length * organization:
+```{r}
+post.rt.mod2<-lmer(SearchTimeAvg~SeqType+ (1|SUBJECT), data = sub[sub$Organization=="No",], REML=F, na.action="na.omit", 
+                  contrasts=list(SeqType="contr.sum"))
+post.rt.mod3<-lmer(SearchTimeAvg~SeqType+ (1|SUBJECT), data = sub[sub$Organization=="Yes",], REML=F, na.action="na.omit", 
+                  contrasts=list(SeqType="contr.sum"))
+tab_model(post.rt.mod2, post.rt.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2, digits = 3)
+```
+<br>
+organization * experiment:
+```{r}
+post.rt.mod4<-lmer(SearchTimeAvg~Organization+ (1|SUBJECT), data = sub[sub$Experiment=="E1",], REML=F, na.action="na.omit", 
+                  contrasts=list(Organization="contr.sum"))
+post.rt.mod5<-lmer(SearchTimeAvg~Organization+ (1|SUBJECT), data = sub[sub$Experiment=="E2",], REML=F, na.action="na.omit", 
+                  contrasts=list(Organization="contr.sum"))
+tab_model(post.rt.mod4, post.rt.mod5, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+
+<br>
+Average search time per item is overall slower for items in short search squences than long ones (b = .03, 95% CI [.01, .05], t = 3.19, p < .001). 
+
+Individuals are slower to search for items when organization was not attempted than when organization was attempted (b = .25, 95% CI [.23, .28], t = 21.01, p < .001)
+
+There was a significant two-way interaction between sequence length and whether organization was attempted (b = .03, 95% CI [.01, .05], t = 3.07, p < .001). When organization was not attempted, sequence length predicted average search time such that target items in short search sequences take longer to search for than items in long sequences (b = .06, 95% CI [.02, .09], t = 3.27, p < .001). However, sequence length did not significant predict search time for trials where organization was attempted (b = -.004, 95% CI [-.02. .01], t = .47, p = .64)
+
+There was also a significant two-way interaction between organization and experiment (b = .03, 95% CI [.01, .05], t = 2.55, p = .01). In both experiments, organization led to a significantly shorter search time per item; however, this difference was not pronounced in experiment 1 (b = .30, 95% CI [.27, .33], t = 19.13, p < .001) than in experiment 2 (b = .22, 95% CI [.19, .26], t = 12.37, p < .001).
+
+No other main effects or interactions were significant (all p > .26).
+
+
+
+
+### Organizational Moves:
+
+#### Did decision to organize (Y/N) change as a function of sequence type?
+
+```{r}
+graph1<-ddply(sub, .(SUBJECT, SeqType, Experiment), summarize, 
+              mean=mean(Org.Num)
+              )
+
+graph2<-ddply(graph1, .(SeqType, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+ggplot(graph2, aes(x=SeqType, y=dep.avg, colour=Experiment))+
+  geom_point(size=3, shape=16, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray70"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray70"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="#432620"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent")
+  )+
+  ggtitle("choice to organize as a function of sequence type")+
+  geom_hline(yintercept = 0.5, linetype="dotted")+
+  scale_colour_manual("Experiment", values=wes_palette("Darjeeling1", n=2))+
+  scale_x_discrete("Length of Target Sequence")+
+  scale_y_continuous("Proportion of Trials Where Organization Occured", limits=c(0, 1))
+```
+
+```{r, warning=T}
+moves.mod<-glmer(Org.Num ~ SeqType*Experiment + (1 | SUBJECT), data = sub, family = binomial,
+                 contrasts = list(SeqType="contr.sum", Experiment="contr.sum")) 
+tab_model(moves.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+```{r}
+moves.mod2<-glmer(Org.Num ~ SeqType + (1 | SUBJECT), data = sub[sub$Experiment=="E1",], family = binomial,
+                 contrasts = list(SeqType="contr.sum")) 
+moves.mod3<-glmer(Org.Num ~ SeqType + (1 | SUBJECT), data = sub[sub$Experiment=="E2",], family = binomial,
+                 contrasts = list(SeqType="contr.sum")) 
+tab_model(moves.mod2, moves.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+
+<br>
+Overall, individuals are less likely to organize their task space when they encounter a short rather than long search sequence (b = -.16, 95% CI [-.29, -.03], z = 2.44, p = .01). This main effect is further qualified by a significant two-way interaction across experiments (b = -.26, 95% CI [-.39, -.13], z = 3.87, p < .001). Specifically, we found a significant effect of sequence length on likelihood to engage in organization in experiment 1 (b = -.41, 95% CI [-.59, -.23], z = 4.49, p < .001) but not for experiment 2 (b = .10, 95% CI [-.09 .28], z = 1.00, p = .32).
+
+
+#### Decision to Organize (Y/N) as a function of sequence type across time
+
+```{r, fig.height=7, fig.width=8}
+graph1<-ddply(sub, .(SUBJECT, SeqType, TRIAL, Experiment), summarize, 
+              mean=mean(Org.Num)
+              )
+
+graph2<-ddply(graph1, .(SeqType, TRIAL, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+ggplot(graph2, aes(x=TRIAL, y=dep.avg, colour=SeqType))+
+  geom_point(size=3, shape=16, alpha = .6, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  facet_grid(Experiment~.)+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray70"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray70"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="#432620"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent")
+  )+
+  ggtitle("proportion individuals chose to organize task space as a function of \nsequence type")+
+  scale_colour_manual("Sequence\nLength", values=wes_palette("Moonrise3", n=2))+
+  scale_x_continuous("Trials")+
+  scale_y_continuous("Proportion of Trials Where Organization Occured")+
+  coord_cartesian(ylim = c(0, 1.49))
+
+```
+
+```{r, warning=T}
+moves.mod<-glmer(Org.Num ~ trial.c*SeqType*Experiment +(1|SUBJECT), data = sub, family = binomial(link = logit),
+                 contrasts=list(SeqType="contr.sum", Experiment="contr.sum"), control=glmerControl(optimizer="bobyqa",
+                            optCtrl=list(maxfun=2e5))) 
+tab_model(moves.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+
+<br>
+**NOTE:** Optimizer was changed from Nelder_Mead to bobyqa in order to resolve convergence issue
+
+As the number of trials increased, the likelihood of organization decreases (b = -.06, 95% CI [-.07, -.05], z = 10.45, p < .001).
+
+Organization was less likely when participants encountered short rather than long search sequences (b = -.21, 95% CI [-.35, -.07] z = 2.99, p < .001). This was qualified by a two-way interaction between sequence length and experiment (b = -.31, 95% CI [-.45, -.17], z = 4.37, p < .001)
+
+### Item Arrangement & Distance to Goal Location:
+
+#### Did item location change pre- vs post-task as a function of sequence type?
+
+```{r}
+graph1<-ddply(sub.org, .(SUBJECT, Arrangement, SeqType, Experiment), summarize, 
+              mean=mean(Distance)
+              )
+
+graph2<-ddply(graph1, .(Arrangement, SeqType, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+ggplot(graph2, aes(x=SeqType, y=dep.avg, group=Arrangement, colour=Arrangement))+
+  geom_point(size=3, shape=16, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  facet_grid(.~Experiment)+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray70"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray70"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="#432620"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent")
+  )+
+  ggtitle("item location change as a function of sequence type + \ndecision to organize")+
+  scale_colour_manual("Item Organization", values=wes_palette(n=3, name="GrandBudapest1"))+
+  scale_x_discrete("Length of Target Sequence")+
+  scale_y_continuous("Distance", limits=c(0, 650), breaks=seq(0, 1000, 100))
+```
+
+(pre- vs post-organization)
+
+```{r}
+sub.org.sub<-subset(sub.org, Arrangement!="Unorganized")
+arr.mod<-lmer(Distance~SeqType*Arrangement*Experiment +(1|SUBJECT), data = sub.org.sub, REML=F, na.action="na.omit", 
+              contrasts=list(SeqType="contr.sum", Arrangement="contr.sum", Experiment="contr.sum"))
+tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+
+<br>
+There was only a main effect of organizational state (pre- vs post-organization; b = 173.92, 95% CI [168.84, 179.01], t = 67.05, p < .001).
+
+No other main effects or interactions were significant (all p > .49).
+
+<br>
+(unorganized vs pre-organization)
+
+```{r}
+sub.org.sub<-subset(sub.org, Arrangement!="Post-Organization")
+arr.mod<-lmer(Distance~SeqType*Arrangement*Experiment +(1|SUBJECT), data = sub.org.sub, REML=F, na.action="na.omit", 
+              contrasts=list(SeqType="contr.sum", Arrangement="contr.sum", Experiment="contr.sum"))
+tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+
+<br>
+Only organizational state (unorganized vs pre-organization trials) led to differences in overall item distance (b = -31.12, 95% CI [-38.86, -23.37], t = 7.87, p < .001)
+
+No other main effects or interactions were significant (all p > .11)
+
+
+<br>
+(unorganized vs post-organization)
+
+```{r}
+sub.org.sub<-subset(sub.org, Arrangement!="Pre-Organization")
+arr.mod<-lmer(Distance~SeqType*Arrangement*Experiment +(1|SUBJECT), data = sub.org.sub, REML=F, na.action="na.omit", 
+              contrasts=list(SeqType="contr.sum", Arrangement="contr.sum", Experiment="contr.sum"))
+tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+breaking down the 3-way interaction
+```{r}
+arr.mod2<-lmer(Distance~SeqType*Arrangement +(1|SUBJECT), data = sub.org.sub[sub.org.sub$Experiment=="E1", ], 
+               REML=F, na.action="na.omit", contrasts=list(SeqType="contr.sum", Arrangement="contr.sum"))
+arr.mod3<-lmer(Distance~SeqType*Arrangement +(1|SUBJECT), data = sub.org.sub[sub.org.sub$Experiment=="E2", ], 
+               REML=F, na.action="na.omit", contrasts=list(SeqType="contr.sum", Arrangement="contr.sum"))
+tab_model(arr.mod2, arr.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+
+<br>
+Item distance differed across rganizational states (unorganized vs post-organization; b = 126.14, 95% Ci [119.30, 132.97], t = 36.18, p < .001).
+
+There was also a two-way interaction between oganizational state and experiment (b = 9.68, 95% CI [2.85, 16.51], t = 2.78, p = .01) as well as a significant three-way interaction (b = -6.59, 95% CI [-11.93, -1.24], t = 2.42, p = .02). Specifically, when split across experiments, the effect of organizational state on item distance was larger in experiment 1 (b = 134.74, 95% CI [126.02, 143.46], t = 30.29, p < .001) than in experiment 2 (b = 116.78, 95% CI [106.11, 127.44], t = 21.46, p < .001). However, no other main effects or interactions were significant across experiments. 
+
+No other main effects or interaction were significant (all p > .37).
+
+
+
+
+
+
+
+
+
+
+<br>
+
+## Item-Level Analyses
+
+### Proportion of Items Moved
+
+#### Did decision to move an item change as a function of sequence type?
+
+```{r}
+graph1<-ddply(sub.item, .(SUBJECT, SeqType, Experiment), summarize, 
+              mean=mean(Move.Num)
+              )
+
+graph2<-ddply(graph1, .(SeqType, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+ggplot(graph2, aes(x=SeqType, y=dep.avg, colour=Experiment))+
+  geom_point(size=3, shape=16, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray70"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray70"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="#432620"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent")
+  )+
+  ggtitle("prop. item movement as a function of sequence type")+
+  scale_colour_manual("Experiment", values=wes_palette("Darjeeling1", n=2))+
+  geom_hline(yintercept = 0.5, linetype="dotted")+
+  scale_x_discrete("Length of Target Sequence")+
+  scale_y_continuous("Proportion of Items Moved", limits=c(0, 1))
+```
+
+```{r, warning=T}
+moves.mod<-glmer(Move.Num ~ SeqType*Experiment + (1 | SUBJECT), data = sub.item, family = binomial,
+                 contrasts = list(SeqType="contr.sum", Experiment="contr.sum")) 
+tab_model(moves.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+two-way interaction:
+```{r}
+moves.mod2<-glmer(Move.Num ~ SeqType + (1 | SUBJECT), data = sub.item[sub.item$Experiment=="E1",], family = binomial,
+                 contrasts = list(SeqType="contr.sum")) 
+moves.mod3<-glmer(Move.Num ~ SeqType + (1 | SUBJECT), data = sub.item[sub.item$Experiment=="E2",], family = binomial,
+                 contrasts = list(SeqType="contr.sum")) 
+tab_model(moves.mod2, moves.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+Individuals are less likely to organize their task space when they encounter a short rather than long search sequence (b = -.09, 95% CI [-.16, -.02], z = 2.46, p = .01).
+
+There was also a significant two-way interaction of sequence length across experiments (b = -.22, 95% CI [-.29, -.15], z = 6.05, p < .001). For experiment 1, short sequences are associated with a *decrease* in the likelihood that individuals will organize their environment (b = -.31, 95% CI [-.41, -.21], z = 5.96, p < .001). However, the opposite is true in experiment 2; individuals were more likely to organize their environments when presented with short rather than long sequences (b = .13, 95% CI [.03, .23], z = 2.57, p = .01)
+
+#### Decision to move items as a function of sequence type over time
+
+```{r, fig.width=8, fig.height=7}
+graph1<-ddply(sub.item, .(SUBJECT, SeqType, TRIAL, Experiment), summarize, 
+              mean=mean(Move.Num)
+              )
+
+graph2<-ddply(graph1, .(SeqType, TRIAL, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+ggplot(graph2, aes(x=TRIAL, y=dep.avg, colour=SeqType))+
+  geom_point(size=3, shape=16, alpha = .6, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  facet_grid(Experiment~.)+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray70"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray70"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="#432620"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent")
+  )+
+  ggtitle("proportion individuals chose to organize task space as a function of \nsequence type")+
+  scale_colour_manual("Sequence\nLength", values=wes_palette("Moonrise3", n=2))+
+  scale_x_continuous("Trials")+
+  scale_y_continuous("Proportion of Trials Where Organization Occured")+
+  coord_cartesian(ylim=c(0, 1.49))
+```
+
+```{r, warning=T}
+moves.mod<-glmer(Move.Num ~ trial.c*SeqType*Experiment + (1 | SUBJECT), data = sub.item, family = binomial,
+                  contrasts=list(SeqType="contr.sum", Experiment="contr.sum")) 
+tab_model(moves.mod, transform = NULL, show.stat = T, p.val = "wald", digits = 3, digits.p = 2)
+```
+<br>
+trial & seq length 
+```{r}
+moves.mod2<-glmer(Move.Num ~ trial.c+ (1 | SUBJECT), data = sub.item[sub.item$Experiment=="E1", ], 
+                  family = binomial, contrasts=list(SeqType="contr.sum")) 
+moves.mod3<-glmer(Move.Num ~ trial.c+ (1 | SUBJECT), data = sub.item[sub.item$Experiment=="E2", ], 
+                  family = binomial, contrasts=list(SeqType="contr.sum")) 
+tab_model(moves.mod2, moves.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+
+```
+
+<br>
+Increased trial was associated with a decrease in the likelihood of organizing one's environment (b = -.03, 95% CI [-.04, -.03], z = 12.22, p < .001).
+
+Over and above the previous model, there was also a significant two-way interaction between trial and experiment (b = -.01 95% CI [-.013, -.002], z = 2.67, p = .01). Specifically, though there is a negative relation between trial and choice to organize the task space, this relation was stronger in experiment 1 (b = -.04, 95% CI [-.05, -.03], z = 10.45, p < .001) than in experiment 2 (b = -.03, 95% CI [-.03, -.02], z = 7.01, p < .001).
+
+
+
+
+### Distance from target as a function of whether items were moved and sequence length
+
+```{r}
+graph1<-ddply(sub.item.org, .(SUBJECT, Arrangement, SeqType, Experiment), summarize, 
+              mean=mean(Distance)
+              )
+
+graph2<-ddply(graph1, .(Arrangement, SeqType, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+ggplot(graph2, aes(x=SeqType, y=dep.avg, group=Arrangement, colour=Arrangement))+
+  geom_point(size=3, shape=16, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  facet_grid(.~Experiment)+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray70"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray70"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="#432620"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent")
+  )+
+  ggtitle("item location change as a function of sequence type + \ndecision to organize")+
+  scale_colour_manual("Item Movement", values=wes_palette(n=3, name="GrandBudapest1"))+
+  scale_x_discrete("Length of Target Sequence")+
+  scale_y_continuous("Distance", limits=c(0, 720), breaks=seq(0, 1000, 100))
+
+```
+
+(pre- vs post-movement)
+
+```{r}
+sub.item.org.sub<-subset(sub.item.org, Arrangement!="Unmoved")
+arr.mod<-lmer(Distance~SeqType*Arrangement*Experiment +(1|SUBJECT), data = sub.item.org.sub, REML=F,
+               na.action="na.omit", contrasts = list(SeqType="contr.sum", Arrangement="contr.sum",
+                                                     Experiment="contr.sum"))
+tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+
+<br>
+There was a main effect of organizational state (b = 208.11, 95% CI [203.74, 212.48], t = 93.38, p < .001) such that items prior to a move were located further away from the goal location than after an item was moved.
+
+
+
+(unmoved vs pre-movement items)
+
+```{r}
+sub.item.org.sub<-subset(sub.item.org, Arrangement!="Post-Movement")
+arr.mod<-lmer(Distance~SeqType*Arrangement*Experiment +(1|SUBJECT), data = sub.item.org.sub, REML=F,
+               na.action="na.omit", contrasts = list(SeqType="contr.sum", Arrangement="contr.sum",
+                                                     Experiment="contr.sum"))
+tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+<br>
+```{r}
+arr.mod2<-lmer(Distance~Arrangement +(1|SUBJECT), data = sub.item.org.sub[sub.item.org.sub$Experiment=="E1",],
+               REML=F, na.action="na.omit", contrasts = list(Arrangement="contr.sum"))
+arr.mod3<-lmer(Distance~Arrangement +(1|SUBJECT), data = sub.item.org.sub[sub.item.org.sub$Experiment=="E2",],
+               REML=F, na.action="na.omit", contrasts = list(Arrangement="contr.sum"))
+tab_model(arr.mod2, arr.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
+```
+
+<br>
+Items that remain unmoved tended to be located closer to the goal location than the initial location of items that were later moved (b = -102.07, 95% CI [-109.34, -94.81], t = 27.53, p < .001)
+
+There was also a significant two-way interaction between organizational states (unmoved vs pre-movement items) and experiment (b = 8.44, 95% CI [1.17, 15.70], t = 2.28, p = .02). Specificaly, the discrepency in item distance is bigger in experiment 1 (b = -92.56, 95% CI [-101.95, -83.17], t = 19.32, p < .001) than experiment 1 (b = -111.20, 95% CI [-122.07, -100.33], t = 20.05, p < .001)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
