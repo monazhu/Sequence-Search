@@ -44,9 +44,7 @@ library(ez)
 
 ```{r}
 # Importing data
-# setwd("C:/Users/Grayden Solman/Desktop/Mona/Sequenced Search")
-setwd("C:/Users/MonaZhu/Dropbox/Grayden/Sequenced Search")
-# setwd("//fileu/users$/jhzhu/Desktop/Sequenced Search")
+
 raw1a<-read.table("summary_firstHalf.txt", sep="\t", header=T)
 raw1a$Experiment<-"E1a"
 raw1b<-read.table("summary_secondHalf.txt", sep="\t", header=T)
@@ -391,15 +389,15 @@ tab_model(post.rt.mod, show.stat = T, p.val = "wald", digits.p = 2)
 <br>
 organization * seq length
 ```{r}
-post.rt.mod2<-lmer(SearchTimeAvg~SeqType + (1|SUBJECT), data = e1a[e1a$Organization=="No",], REML=F, na.action=na.omit)
-post.rt.mod3<-lmer(SearchTimeAvg~SeqType + (1|SUBJECT), data = e1a[e1a$Organization=="Yes",], REML=F, na.action=na.omit)
-tab_model(post.rt.mod2, post.rt.mod3, show.stat = T, p.val = "wald", digits.p = 2)
+post.rt.mod2<-lmer(SearchTimeAvg~SeqType + (1|SUBJECT), data = e1a[e1a$Organization=="No",], REML=F, na.action=na.omit, contrasts=list(SeqType="contr.sum"))
+post.rt.mod3<-lmer(SearchTimeAvg~SeqType + (1|SUBJECT), data = e1a[e1a$Organization=="Yes",], REML=F, na.action=na.omit, contrasts=list(SeqType="contr.sum"))
+tab_model(post.rt.mod2, post.rt.mod3, show.stat = T, p.val = "wald", digits.p = 2, digits=3)
 ```
 
 <br>
 Next, we examined whether individuals had an advantage in the search phase of the task depending on whether they chose to organize their environments earlier, the length of the search sequence, and the number of unique targets. Indeed, participants spent more time on search per item when they chose not to organize their task space (b = .30, 95% CI [.28, 3.32], t = 28.58, p < .001). There was also a main effect of number of unique target items, such that an increase in the number of unique items resulted in longer time spent searching each item on average (b = .11, 95% CI [.09, .13], t = 11.13, p < .001). Interestingly, individual on average spent more time searching each item when presented with a short search sequence than a long one (b = .06, 95% CI [-.26, -.16], t = 8.47, p < .001). 
 
-There was also a significant two-way between decision to organize and sequence length (b = .04, 95% CI [.03, .06], t = 5.50, p < .001). If organization was not attempted, participants were faster to search for individuals target items in a long sequence than a short one (b = -.19, 95% CI [-.25, -.13], t = 6.44, p < .001). However, if participants organized objects on a given trial, this difference was eliminated (b = -.02, 95% CI [-.06, .01], t = 1.40, p = .16). No other interactions were significant (all p > .16). 
+There was also a significant two-way between decision to organize and sequence length (b = .04, 95% CI [.03, .06], t = 5.50, p < .001). If organization was not attempted, participants were faster to search for individuals target items in a long sequence than a short one (b = .10, 95% CI [.07, .12], t = 6.44, p < .001). However, if participants organized objects on a given trial, this difference was eliminated (b = .01, 95% CI [-.005, .03], t = 1.40, p = .16). No other interactions were significant (all p > .16). 
 
 
 
@@ -567,8 +565,8 @@ tab_model(arr.mod, transform=NULL, show.stat = T, p.val = "wald", digits.p = 3)
 <br>
 organization * seq length
 ```{r}
-arr.mod1<-lmer(Distance~SeqType+(1|SUBJECT), data = e1a.org.sub[e1a.org.sub$Arrangement=="Pre-Organization",], REML=F, na.action=na.omit)
-arr.mod2<-lmer(Distance~SeqType+(1|SUBJECT), data = e1a.org.sub[e1a.org.sub$Arrangement=="Post-Organization",], REML=F, na.action=na.omit)
+arr.mod1<-lmer(Distance~SeqType+(1|SUBJECT), data = e1a.org.sub[e1a.org.sub$Arrangement=="Pre-Organization",], REML=F, na.action=na.omit, contrasts = list (SeqType="contr.sum"))
+arr.mod2<-lmer(Distance~SeqType+(1|SUBJECT), data = e1a.org.sub[e1a.org.sub$Arrangement=="Post-Organization",], REML=F, na.action=na.omit, contrasts = list (SeqType="contr.sum"))
 
 tab_model(arr.mod1, arr.mod2, transform=NULL, show.stat = T, p.val = "wald", digits.p = 2) 
 ```
@@ -587,7 +585,7 @@ In addition to individuals' decision to engage in organization, we also examined
 
 First, we examined only the subset of trials where organization was attempted to see how item distance changed pre- and post-organization as a function of sequence length and number of unique targets. As expected, a linear mixed-effects model showed that target items were, on average, placed closer to the goal location post-organization (b = 164.37, 95% CI [16017, 168.57], t = 76.60, p < .001).In addition, items were generally placed further from the goal location when individuals encountered a short than long search sequence (b = 5.51, 95% CI [1.16, 9.86], t = 2.48, p = .01). Number of unique items in the sequence had a marginal effect on item distance, though this did not reach significance (b = 5.21, 95% CI [-.07, 10.49], t = 1.93, p = .053)
 
-However, there was a significant two-way interaction between sequence length and item arrangement pre- vs post-organization (b = -6.21, 95% CI [-10.41, -2.01], t = 2.90, p < .001). Follow up analyses on the former interaction revealed that although pre-organization item distance was the same regardless of the length of the target sequence (b = 4.20, 95% CI [-9.96, 18.35], t = .58, p = .56), items tended to be moved closer post-organization when participants were presented with long target sequences than short ones (b = -27.05, 95% CI [-35.75, -18.35], t = 6.09, p < .001). 
+However, there was a significant two-way interaction between sequence length and item arrangement pre- vs post-organization (b = -6.21, 95% CI [-10.41, -2.01], t = 2.90, p < .001). Follow up analyses on the former interaction revealed that although pre-organization item distance was the same regardless of the length of the target sequence (b = -2.10, 95% CI [-9.18, 4.98], t = .58, p = .56), items tended to be moved closer post-organization when participants were presented with long target sequences than short ones (b = 13.52, 95% CI [9.18, 17.87], t = 6.09, p < .001). 
 
 There was also a significant two-way interaction between item arrangement and number of unique items (b = -8.25, 95% CI [-13.44, -3.05], t = 3.11, p = .002). Specifically, while item distance prior to organization was the same regardless of the number of unique items presented (b = -3.03, 95% CI [-11.49, 5.43], t = 0.70, p = .48), items tended to be placed increasingly further from the goal location as the number of unique targets to be searched for increased (b = 14.22, 95% CI [9.04, 19.40], t = 5.38, p < .001).
 
@@ -733,6 +731,7 @@ arr.mod3<-lmer(Distance~SeqType*uniq.c+(1|SUBJECT), data = e1a.org.sub[e1a.org.s
                REML=F, na.action=na.omit, contrasts = list (SeqType="contr.sum"))
 tab_model(arr.mod2, arr.mod3, transform=NULL, show.stat = T, p.val = "wald", digits.p = 2) 
 ```
+<br>
 seq length * unique items for the unorganized trials
 ```{r}
 arr.mod4<-lmer(Distance~uniq.c+(1|SUBJECT), data = e1a.org.sub[e1a.org.sub$Arrangement=="Unorganized" & e1a.org.sub$SeqType=="Short",], REML=F, na.action=na.omit, contrasts = list (SeqType="contr.sum"))
@@ -911,12 +910,14 @@ arr.mod<-lmer(Distance~SeqType*Arrangement*uniq.c+(1|SUBJECT), data = item1a.sub
 tab_model(arr.mod, transform=NULL, show.stat = T, p.val = "wald", digits.p = 2) 
 ```
 <br>
-length * arrangement interaction:
+seq length * arrangement interaction:
 ```{r}
 # breaking down the squence length * arrangement interaction
-arr.mod2<-lmer(Distance~SeqType+(1|SUBJECT), data = item1a.sub[item1a.sub$Arrangement=="Pre-Movement",], REML=F, na.action=na.omit)
+arr.mod2<-lmer(Distance~SeqType+(1|SUBJECT), data = item1a.sub[item1a.sub$Arrangement=="Pre-Movement",], REML=F,
+               na.action=na.omit, contrasts = list(SeqType="contr.sum"))
 
-arr.mod3<-lmer(Distance~SeqType+(1|SUBJECT), data = item1a.sub[item1a.sub$Arrangement=="Post-Movement",], REML=F, na.action=na.omit)
+arr.mod3<-lmer(Distance~SeqType+(1|SUBJECT), data = item1a.sub[item1a.sub$Arrangement=="Post-Movement",], REML=F,
+               na.action=na.omit, contrasts = list(SeqType="contr.sum"))
 
 tab_model(arr.mod2, arr.mod3, transform=NULL, show.stat = T, p.val = "wald", digits.p = 2) 
 ```
@@ -935,7 +936,7 @@ tab_model(arr.mod4, arr.mod5, transform=NULL, show.stat = T, p.val = "wald", dig
 <br>
 A linear mixed-effects analysis was first conducted on item placement pre- and post-organization, for trials where individuals chose to organize their task environments prior to the search phase, and whether it differed depending on the length of the search sequence and number of unique targets. Results reveal that compared to the start of each trial, items were moved closer to the goal location post-organization (b = 201.49, 95% CI [197.87, 205.12], t = 108.94, p < .001). Neither sequence length (b = b = -.92, 95% CI [-4.71, 2.87], t = -.48, p = .06) nor number of unique targets (b = 4.47, 95% CI [-.27, 9.21], t = 1.85, p = .06) on their own significantly predicted a target item's distance from the goal location. 
 
-However, there was a significant two-way interaction between sequence length and item placement pre- vs. post-organization (b = -4.18, 95% CI [7.80, -.55], t = 2.26, p = .02). Prior to organization, there were no significant differences in an individual item's distance to the goal location across short and long sequence trials (b = 10.12, 95% CI [-3.78, 24.02], t = 1.43, p = .15); however, items tended to be placed closer to the goal location in trials with long target sequences post-organization compared to trials with short target sequences (b = -6.77, 95% CI [-11.97, -1.56], t = 2.55, p = .01). No other interactions were significant (all p > .19).
+However, there was a significant two-way interaction between sequence length and item placement pre- vs. post-organization (b = -4.18, 95% CI [7.80, -.55], t = 2.26, p = .02). Prior to organization, there were no significant differences in an individual item's distance to the goal location across short and long sequence trials (b = -5.06, 95% CI [-12.01, 1.89], t = 1.43, p = .15); however, items tended to be placed closer to the goal location in trials with long target sequences post-organization compared to trials with short target sequences (b = 3.38, 95% CI [.78, 5.99], t = 2.55, p = .01). No other interactions were significant (all p > .19).
 
 There was also a significant two-way interaction between number of unique target items and item placement pre- vs post-organization (b = -4.97, 95% CI [-9.62, -.33], t = 2.10, p = .04). Specifically, although item distance did not differ as a function of number of unique targets prior to organization (b = -1.24, 95% CI [-9.80, 7.33], t = .28, p = .78), there was a significant positive relation between the two post-organization such that as the number of unique items increased, item distance to the goal location also increased (b = 10.54, 95% CI [7.37, 13.71], t = 6.52, p < .001).
 
@@ -953,15 +954,17 @@ tab_model(arr.mod, transform=NULL, show.stat = T, p.val = "wald", digits.p = 2)
 sequence length * arrangement:
 ```{r}
 # sequence length * arrangement interaction 
-arr.mod2<-lmer(Distance~SeqType+(1|SUBJECT), data = item1a.sub[item1a.sub$Arrangement=="Pre-Movement",], REML=F, na.action=na.omit)
+arr.mod2<-lmer(Distance~SeqType+(1|SUBJECT), data = item1a.sub[item1a.sub$Arrangement=="Pre-Movement",], REML=F,
+               na.action=na.omit, contrasts = list(SeqType="contr.sum"))
 
-arr.mod3<-lmer(Distance~SeqType+(1|SUBJECT), data = item1a.sub[item1a.sub$Arrangement=="Unmoved",], REML=F, na.action=na.omit)
+arr.mod3<-lmer(Distance~SeqType+(1|SUBJECT), data = item1a.sub[item1a.sub$Arrangement=="Unmoved",], REML=F,
+               na.action=na.omit, contrasts = list(SeqType="contr.sum"))
 
 tab_model(arr.mod2, arr.mod3, transform=NULL, show.stat = T, p.val = "wald", digits.p = 2) 
 ```
 
 <br>
-A second linear mixed-effects analysis was conducted to examine whether individual item distance differed in trials wherein individuals chose to organize their task environment or not, and whether this was influenced by target sequence length and number of unique target items. An item's distance to the goal location on trials in which organization was not attempted were closer than trials where organization did occur (b = -84.76, 95% CI [-90.80, -.78.73], t = 27.51, p < .001). Item distance also differed between trials with short vs. long target sequences, such that items tended to be further from the goal location on trials with short rather than long target sequences (b = 11.01, 95% CI [6.01, 16.00], t = 4.32, p < .001). Importantly, there was a significant two-way interaction between these two factors (b = 13.35, 95% CI [8.29, 18.40], t = 5.18, p < .001). Specifically, when participants decided to move a particular item, its pre-movement location did not differ as a function of sequence length (b = 10.12, 95% CI [-3.78, 24.02], t = 1.43, p = .15). On the other hand, the distance of items that were not moved at all on any given trial differed as a function of sequence length; unmoved items tended to be located closer to the goal location on trials where long sequences were presented (b = -43.68, 95% CI [-58.20, -29.16], t = 5.90, p < .001).
+A second linear mixed-effects analysis was conducted to examine whether individual item distance differed in trials wherein individuals chose to organize their task environment or not, and whether this was influenced by target sequence length and number of unique target items. An item's distance to the goal location on trials in which organization was not attempted were closer than trials where organization did occur (b = -84.76, 95% CI [-90.80, -.78.73], t = 27.51, p < .001). Item distance also differed between trials with short vs. long target sequences, such that items tended to be further from the goal location on trials with short rather than long target sequences (b = 11.01, 95% CI [6.01, 16.00], t = 4.32, p < .001). Importantly, there was a significant two-way interaction between these two factors (b = 13.35, 95% CI [8.29, 18.40], t = 5.18, p < .001). Specifically, when participants decided to move a particular item, its pre-movement location did not differ as a function of sequence length (b = -5.06, 95% CI [-12.01, 1.89], t = 1.43, p = .15). On the other hand, the distance of items that were not moved at all on any given trial differed as a function of sequence length; unmoved items tended to be located closer to the goal location on trials where long sequences were presented (b = 21.84, 95% CI [14.58, 29.10], t = 5.90, p < .001).
 
 
 ###### (graph of the sequence length * arrangement interaction)
@@ -1021,6 +1024,7 @@ arr.mod3<-lmer(Distance~SeqType*uniq.c+(1|SUBJECT), data = item1a.sub[item1a.sub
 
 tab_model(arr.mod2, arr.mod3, transform=NULL, show.stat = T, p.val = "wald", digits.p = 3) 
 ```
+
 <br>
 seq length * unique items for unmoved items:
 ```{r}
@@ -1286,10 +1290,12 @@ tab_model(post.rt.mod, show.stat = T, p.val = "wald", digits.p = 2)
 organization * seq length interaction:
 ```{r}
 # organization * seq length interaction
-post.rt.mod2<-lmer(SearchTimeAvg~SeqType + (1|SUBJECT), data = e1b[e1b$Organization=="No",], REML=F, na.action=na.omit)
-post.rt.mod3<-lmer(SearchTimeAvg~SeqType + (1|SUBJECT), data = e1b[e1b$Organization=="Yes",], REML=F, na.action=na.omit)
+post.rt.mod2<-lmer(SearchTimeAvg~SeqType + (1|SUBJECT), data = e1b[e1b$Organization=="No",], REML=F,
+                   na.action=na.omit, contrasts = list(SeqType="contr.sum"))
+post.rt.mod3<-lmer(SearchTimeAvg~SeqType + (1|SUBJECT), data = e1b[e1b$Organization=="Yes",], REML=F,
+                   na.action=na.omit, contrasts = list(SeqType="contr.sum"))
 
-tab_model(post.rt.mod2, post.rt.mod3, show.stat = T, p.val = "wald", digits.p = 2)
+tab_model(post.rt.mod2, post.rt.mod3, show.stat = T, p.val = "wald", digits.p = 2, digits=3)
 
 ```
 
@@ -1300,7 +1306,7 @@ Participants were slower to find targets when presented with short search sequen
 
 As the number of unique items increased, participants tended to spend more time searching for each item on average (b = .11, 95% CI [.09, .13], t = 11.38, p < .001). 
 
-There was also a significant two-way interaction between decision to organize and sequence length (b = 05, 95% CI [.04, .07], t = 6.91, p < .001). When individuals did not organize their task environment on a given trial, they were significantly faster to find target items if they were embedded in a long sequence than a short one (b = -.21, 95% CI [-.27, -.15], t = 6.50, p < .001). On the other hand, any differences in average search time was eliminated if participants organized their task environment before hand (b = .004, 95% CI [-.02, 0.03], t = .31, p = .76).
+There was also a significant two-way interaction between decision to organize and sequence length (b = 05, 95% CI [.04, .07], t = 6.91, p < .001). When individuals did not organize their task environment on a given trial, they were significantly faster to find target items if they were embedded in a long sequence than a short one (b = .11, 95% CI [.07, .14], t = 6.50, p < .001). On the other hand, any differences in average search time was eliminated if participants organized their task environment before hand (b = -.002, 95% CI [-.02, .01], t = .31, p = .76).
 
 No other  interactions were significant (all p > .19)
 
@@ -1755,9 +1761,9 @@ seq length * arrangement
 ```{r}
 # seq length * arrangement
 arr.mod2<-lmer(Distance~SeqType+(1|SUBJECT), data = item1b.sub[item1b.sub$Arrangement=="Pre-Movement",],
-               REML=F, na.action=na.omit)
+               REML=F, na.action=na.omit,  contrasts = list(SeqType="contr.sum"))
 arr.mod3<-lmer(Distance~SeqType+(1|SUBJECT), data = item1b.sub[item1b.sub$Arrangement=="Post-Movement",],
-               REML=F, na.action=na.omit)
+               REML=F, na.action=na.omit,  contrasts = list(SeqType="contr.sum"))
 
 tab_model(arr.mod2, arr.mod3, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
 ```
@@ -1778,7 +1784,7 @@ If a target item was moved, its placement pre-movement was further to the goal l
 
 Overall, item distance to the goal location was greater in the presence of short rather than long search sequences (b = 7.56, 95% CI [3.82, 11.30], t = 3.96, p < .001).
 
-There was a significant two-way interaction between movement state (pre vs. post) and sequence length (b = 4.53, 95% CI [.92, 8.13], t = 2.46, p = .01). While long search sequences were associated with shorter item distances both pre-movement (b = -22.15, 95% CI [-36.12, -8.18], t = 3.11, p < .001) and post-movement (b = -8.27, 95% CI [-12.92, -3.63], t = 3.48, p < .001), the discrepency in distance was bigger in the former than the latter. 
+There was a significant two-way interaction between movement state (pre vs. post) and sequence length (b = 4.53, 95% CI [.92, 8.13], t = 2.46, p = .01). While short search sequences were associated with longer item distances both pre-movement (b = 11.07, 95% CI [4.09, 18.06], t = 3.11, p < .001) and post-movement (b = 4.13, 95% CI [1.81, 6.46], t = 3.48, p < .001), the discrepency in distance was bigger in the former than the latter. 
 
 There was also a significant two-way interaction between movement state (pre vs. post) and number of unique targets (b = -7.40, 95% CI [-11.99, -2.82], t = 3.16, p < .001 ). Prior to being moved, an item's distance to the goal location did not differ as a fucntion of number of unique items (b = -6.93, 95% CI [-15.50, 1.64], t = 1.58, p = .11). But after items were moved, item distance increased with the number of unique targets in a sequence (b = 4.86, 95% CI [2.03, 7.69], t = 3.37, p < .001).
 
@@ -1790,7 +1796,8 @@ No other predictors or interactions were significant (all p > .18).
 ```{r}
 item1b.sub<-subset(item1b.org, Arrangement!="Post-Movement")
 
-arr.mod<-lmer(Distance~SeqType*Arrangement*uniq.c+(1|SUBJECT), data = item1b.sub, REML=F, na.action=na.omit)
+arr.mod<-lmer(Distance~SeqType*Arrangement*uniq.c+(1|SUBJECT), data = item1b.sub, REML=F, na.action=na.omit,
+              contrasts = list(SeqType="contr.sum", Arrangement="contr.sum"))
 tab_model(arr.mod, transform = NULL, show.stat = T, p.val = "wald", digits.p = 2)
 
 ```
@@ -1805,11 +1812,11 @@ tab_model(arr.mod2, arr.mod3, transform = NULL, show.stat = T, p.val = "wald", d
 ```
 
 <br>
-Overall, items tended to be located closer to the goal location on trials with long rather than short search sequences (b = -37.23, 95% CI [-50.63, -23.82], t = 5.44, p < .001). 
+Overall, items tended to be located further from the goal location on trials with short rather than long search sequences (b = 15.90, 95% CI [10.99, 20.81], t = 6.34, p < .001). 
 
-Items that were later moved tended to be placed further away from the goal location than items that were not moved (b = 190.32, 95% CI [174.77, 205.87], t = 23.99, p < .001).
+Items that remained unmoved tended to be placed closer to the goal location than initial placements of items that were later moved (b = -97.88, 95% CI [-103.77, -97.98], t = 32.55, p < .001).
 
-There was a significant two-way interaction between number of unique items and whether items were moved (b = -20.06, 95% CI [-37.80, -2.31], t = 2.21, p = .03). Hoever, followup comparisons did not yield significant predictors (all p > .11)
+There was a significant two-way interaction between number of unique items and whether items were moved (b = 8.27, 95% CI [2.05, 14.49], t = 2.61, p = .01). Hoever, followup comparisons did not yield significant predictors (all p > .11)
 
 
 
