@@ -1,0 +1,501 @@
+---
+title: "Sequence Search Analysis Writeup (e1a & b Only)"
+author: Mona Zhu
+date: Updated June 16, 2019
+output: 
+  html_document:
+    fig_width: 8
+    fig_height: 5
+    fig.align: center
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: tango
+    code_folding: hide
+---
+
+  <style>
+  pre code, pre, code {
+    overflow-y: auto !important;
+    max-height: 20em;
+  }
+</style>
+
+```{r}
+knitr::opts_chunk$set(warning=FALSE, message = FALSE)
+```
+
+```{r}
+# load libraries
+# tidying data
+library(reshape2)
+library(sjPlot)
+
+# plotting
+library(ggplot2)
+library(car)
+library(plyr)
+library(RColorBrewer)
+
+# analyses
+library(lme4)
+library(ez)
+```
+
+```{r}
+# Importing data
+
+raw1a<-read.table("summary_firstHalf.txt", sep="\t", header=T)
+raw1a$Experiment<-"E1a"
+raw1b<-read.table("summary_secondHalf.txt", sep="\t", header=T)
+raw1b$Experiment<-"E1b"
+raw2<-read.table("summary.txt", sep="\t", header=T)
+raw2$Experiment<-"E2"
+
+df<-rbind(raw1a, raw1b, raw2)
+
+# Item Level Data
+rawi1a<-read.table("summaryByItems_firstHalf.txt", sep="\t", header=T)
+rawi1a$Experiment<-"E1a"
+rawi1b<-read.table("summaryByItems_secondHalf.txt", sep="\t", header=T)
+rawi1b$Experiment<-"E1b"
+rawi2<-read.table("summaryByItems.txt", sep="\t", header=T)
+rawi2$Experiment<-"E2"
+
+item<-rbind(rawi1a, rawi1b, rawi2)
+
+# Creating additional variables
+df$SUBJECT<-factor(paste0(df$SUBJECT,df$Experiment))
+df$Organization<-factor(ifelse(df$NUM_ORG_MOVES==0, "No", "Yes"))
+df$Org.Num<-ifelse(df$NUM_ORG_MOVES==0, 0, 1)
+df$SeqType<-factor(ifelse(df$SEQ_LEN<5, "Short", "Long"))
+df$SeqType<-factor(df$SeqType, levels(df$SeqType)[c(2,1)])
+df$PrepTime<-(df$SEARCH_START_TIME-df$TRIAL_START_TIME)/1000
+df$SearchTimeTotal<-(df$SEARCH_COMPLETION_TIME-df$SEARCH_START_TIME)/1000
+df$SearchTimeAvg<-df$SearchTimeTotal/df$SEQ_LEN
+df$Repetition<-df$SEQ_LEN/df$NUM_UNIQUE_IN_SEQ
+
+e1<-subset(df, Experiment %in% c("E1a","E1b"))
+e2<-subset(df, Experiment=="E2")
+
+# Cleaning Up Item level data
+item$SUBJECT<-factor(paste0(item$SUBJECT, item$Experiment))
+item$Movement<-factor(ifelse(item$AVG_TARG_DIST==item$POST_ORG_AVG_TARG_DIST, "Unmoved", "Moved"))
+item$Movement<-factor(item$Movement, levels(item$Movement)[c(2,1)])
+item$Move.Num<-ifelse(item$AVG_TARG_DIST==item$POST_ORG_AVG_TARG_DIST, 0, 1)
+item$SeqType<-factor(ifelse(item$SEQ_LEN<5, "Short", "Long"))
+item$SeqType<-factor(item$SeqType, levels(item$SeqType)[c(2,1)])
+item$Repetition<-item$SEQ_LEN/item$NUM_UNIQUE_IN_SEQ
+
+moved<-subset(item, Movement=="Moved")
+item.moved<-melt(moved, id=c(1:6, 8, 10:14))
+names(item.moved)[c(13, 14)]=c("Arrangement", "Distance")
+item.moved$Arrangement<-factor(recode(item.moved$Arrangement,"'AVG_TARG_DIST'='Pre-Movement';
+                           'POST_ORG_AVG_TARG_DIST'='Post-Movement'"))
+unmoved<-subset(item, Movement=="Unmoved")
+item.unmoved<-melt(unmoved, id=c(1:6, 8, 10:14))
+item.unmoved2<-subset(item.unmoved, variable=="AVG_TARG_DIST")
+names(item.unmoved2)[c(13, 14)]=c("Arrangement", "Distance")
+item.unmoved2$Arrangement<-factor(recode(item.unmoved2$Arrangement,"'AVG_TARG_DIST'='Unmoved'"))
+
+item.org<-rbind(item.moved, item.unmoved2)
+
+item.org$Arrangement<-factor(item.org$Arrangement, levels(item.org$Arrangement)[c(3,2,1)])
+
+e1.item<-subset(item.org, Experiment %in% c("E1a","E1b"))
+e2.item<-subset(item.org, Experiment=="E2")
+
+```
+
+
+# Experiment 1
+
+### Pre-Task Time
+
+```{r}
+graph1<-ddply(e1, .(SUBJECT, SeqType, Organization, NUM_UNIQUE_IN_SEQ, Experiment), summarize, 
+              mean=mean(PrepTime)
+              )
+
+graph2<-ddply(graph1, .(SeqType, Organization, NUM_UNIQUE_IN_SEQ, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+# print(graph2)
+
+graph2$NUM_UNIQUE_IN_SEQ=factor(graph2$NUM_UNIQUE_IN_SEQ)
+
+png(file = "SequenceSearch_Figure2_(PreTaskTime E1).png", bg = "white", type = c("cairo"), width=2400, height=1600, res=300)
+
+ggplot(graph2, aes(x=SeqType, y=dep.avg, colour=NUM_UNIQUE_IN_SEQ, shape=Organization))+
+  geom_point(size=3, position = position_dodge(width = .05))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(width=.05),
+                linetype="solid")+
+  facet_grid(.~Experiment)+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray20"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray60"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="gray20"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent"),
+    strip.background = element_rect(color="gray60", fill="transparent", linetype="solid")
+  )+
+  scale_colour_grey("Number of\nUnique Items")+
+  # scale_colour_manual("Unique Targets")+
+  scale_shape_manual("Organization\nAttempted?", values=c(16, 17))+
+  scale_x_discrete("Sequence Length")+
+  scale_y_continuous("Total Time Spent in Preparatory Phase (seconds)", breaks=seq(0, 40, 2))+
+  coord_cartesian(ylim=c(0, 20))
+
+dev.off()
+```
+
+### Average Search Time Per Item
+
+```{r}
+graph1<-ddply(e1, .(SUBJECT, SeqType, Organization, NUM_UNIQUE_IN_SEQ, Experiment), summarize, 
+              mean=mean(SearchTimeAvg)
+              )
+
+graph2<-ddply(graph1, .(SeqType, Organization, NUM_UNIQUE_IN_SEQ, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+graph2$NUM_UNIQUE_IN_SEQ=factor(graph2$NUM_UNIQUE_IN_SEQ)
+
+
+png(file = "SequenceSearch_Figure3_(SearchTime E1).png", bg = "white", type = c("cairo"), width=2400, height=1600, res=300)
+
+ggplot(graph2, aes(x=SeqType, y=dep.avg, colour=NUM_UNIQUE_IN_SEQ, shape=Organization))+
+  geom_point(size=3, position = position_dodge(width = .05))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(width=.05),
+                linetype="solid")+
+  facet_grid(.~Experiment)+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray20"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray60"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="gray20"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent"),
+    strip.background = element_rect(color="gray60", fill="transparent", linetype="solid")
+  )+
+  scale_colour_grey("Number of\nUnique Items")+
+  scale_shape_manual("Organization\nAttempted?", values=c(16, 17))+
+  scale_x_discrete("Sequence Length")+
+  scale_y_continuous("Average Search Time Per Item (seconds)", breaks=seq(0, 40, 0.5))+
+  coord_cartesian(ylim=c(0, 2.5))
+
+dev.off()
+
+```
+
+
+### Decision to Organize
+
+````{r}
+graph1<-ddply(e1, .(SUBJECT, SeqType, NUM_UNIQUE_IN_SEQ, Experiment), summarize, 
+              mean=mean(Org.Num)
+              )
+
+graph2<-ddply(graph1, .(SeqType, NUM_UNIQUE_IN_SEQ, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+graph2$NUM_UNIQUE_IN_SEQ=factor(graph2$NUM_UNIQUE_IN_SEQ)
+
+png(file = "SequenceSearch_Figure4_(OrganizationOutcome E1).png", bg = "white", type = c("cairo"), width=2400, height=1600, res=300)
+
+ggplot(graph2, aes(x=SeqType, y=dep.avg, colour=NUM_UNIQUE_IN_SEQ))+
+  geom_point(size=3, shape = 16, position = position_dodge(0.05))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0.1))+
+  facet_grid(.~Experiment)+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray20"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray60"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="gray20"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent"),
+    strip.background = element_rect(color="gray60", fill="transparent", linetype="solid")
+  )+
+  scale_colour_grey("Number of\nUnique Items")+
+  geom_hline(yintercept = 0.5, linetype="dotted")+
+  scale_x_discrete("Sequence Length")+
+  scale_y_continuous("Proportion of Trials Where Organization Occured")+
+  coord_cartesian(ylim=c(0, 1))
+```
+
+
+
+### Item Arrangement
+
+```{r}
+graph1<-ddply(e1.item, .(SUBJECT, Arrangement, SeqType, NUM_UNIQUE_IN_SEQ, Experiment), summarize, 
+              mean=mean(Distance)
+              )
+
+graph2<-ddply(graph1, .(Arrangement, SeqType, NUM_UNIQUE_IN_SEQ, Experiment), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+graph2$NUM_UNIQUE_IN_SEQ=factor(graph2$NUM_UNIQUE_IN_SEQ)
+
+png(file = "SequenceSearch_Figure5_(OrganizationalDecision E1).png", bg = "white", type = c("cairo"), width=2400, height=1600, res=300)
+
+ggplot(graph2, aes(x=NUM_UNIQUE_IN_SEQ, y=dep.avg, shape=SeqType, colour=Arrangement, linetype=SeqType, 
+                   group=interaction(Arrangement, SeqType)))+
+  geom_point(size=3, position = position_dodge(0))+
+  geom_line()+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  facet_grid(.~Experiment)+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray20"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray60"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="gray20"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent"),
+    strip.background = element_rect(color="gray60", fill="transparent", linetype="solid")
+  )+
+  scale_colour_grey("Item Arrangement", labels=c("Unmoved", "Pre-Organization", "Post-Organization"))+
+  scale_linetype("Sequence Length")+
+  scale_shape_manual("Sequence Length", values=c(16,1))+
+  scale_x_discrete("Number of Unique Items")+
+  scale_y_continuous("Item Distance (pixels)", breaks=seq(0, 1000, 100))+
+  coord_cartesian(ylim=c(0, 750))
+
+dev.off()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Experiment 2
+
+### Pre-Task Time
+
+```{r}
+graph1<-ddply(e2, .(SUBJECT, SeqType, Organization, Repetition), summarize, 
+              mean=mean(PrepTime)
+              )
+
+graph2<-ddply(graph1, .(SeqType, Organization, Repetition), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+graph2$Repetition<-factor(graph2$Repetition)
+
+
+png(file = "SequenceSearch_Figure6_(PreTaskTime E2).png", bg = "white", type = c("cairo"), width=2400, height=1600, res=300)
+
+ggplot(graph2, aes(x=Repetition, y=dep.avg, colour=Organization, shape=SeqType, linetype=SeqType,
+                   group=interaction(Organization, SeqType)))+
+  geom_point(size=3, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  geom_line()+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray20"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray60"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="gray20"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent"),
+    strip.background = element_rect(color="gray60", fill="transparent", linetype="solid")
+  )+
+  scale_colour_grey("Organization\nAttempted?", end=0.6)+
+  scale_shape_manual("Sequence Length", values=c(16, 1))+
+  scale_linetype("Sequence Length")+
+  scale_x_discrete("Number of Repeated Items in Sequence")+
+  scale_y_continuous("Total Time Spent in Preparatory Phase (seconds)", breaks=seq(0, 50, 5))
+  # coord_cartesian(ylim=c(0, 20))
+
+dev.off()
+```
+
+### Average Search Time Per Item
+
+```{r}
+graph1<-ddply(e2, .(SUBJECT, SeqType, Organization, Repetition), summarize, 
+              mean=mean(SearchTimeAvg)
+              )
+
+graph2<-ddply(graph1, .(SeqType, Organization, Repetition), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+graph2$Repetition=factor(graph2$Repetition)
+
+
+png(file = "SequenceSearch_Figure7_(SearchTime E2).png", bg = "white", type = c("cairo"), width=2400, height=1600, res=300)
+
+ggplot(graph2, aes(x=Repetition, y=dep.avg, colour=Organization, shape=SeqType, linetype=SeqType, group=interaction(Organization, SeqType)))+
+  geom_point(size=3, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  geom_line()+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray20"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray60"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="gray20"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent"),
+    strip.background = element_rect(color="gray60", fill="transparent", linetype="solid")
+  )+
+  scale_colour_grey("Organization\nAttempted?", end=0.6)+
+  scale_shape_manual("Sequence Length", values=c(16, 1))+
+  scale_linetype("Sequence Length")+
+  scale_x_discrete("Number of Repeated Items in Sequence")+
+  scale_y_continuous("Average Search Time Per Target Item (seconds)", breaks=seq(0, 10, 0.5), limits=c(0, 2.7))
+
+
+dev.off()
+
+```
+
+
+### Decision to Organize
+
+````{r}
+graph1<-ddply(e2, .(SUBJECT, SeqType, Repetition), summarize, 
+              mean=mean(Org.Num)
+              )
+
+graph2<-ddply(graph1, .(SeqType, Repetition), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+graph2$Repetition=factor(graph2$Repetition)
+
+png(file = "SequenceSearch_Figure8_(OrganizationOutcome E2).png", bg = "white", type = c("cairo"), width=2400, height=1600, res=300)
+
+ggplot(graph2, aes(x=Repetition, y=dep.avg, group=SeqType))+
+  geom_point(size=3, shape=16, position = position_dodge(0), colour="grey60")+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0), colour="grey60")+
+  geom_line(aes(linetype=SeqType), colour="grey60")+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray20"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray60"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="gray20"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent"),
+    strip.background = element_rect(color="gray60", fill="transparent", linetype="solid")
+  )+
+  scale_linetype_manual("Sequence Length", values=c("longdash", "solid"))+
+  geom_hline(yintercept = 0.5, linetype="dotted")+
+  scale_x_discrete("Number of Repeated Items in Sequence")+
+  scale_y_continuous("Proportion of Trials Where Organization Occured")+
+  coord_cartesian(ylim=c(0, 1))
+```
+
+
+
+### Item Arrangement
+
+```{r}
+graph1<-ddply(e2.item, .(SUBJECT, Arrangement, SeqType, Repetition), summarize, 
+              mean=mean(Distance)
+              )
+
+graph2<-ddply(graph1, .(Arrangement, SeqType, Repetition), summarize,   
+              dep.avg=mean(mean, na.rm=T),
+              dep.sd=sd(mean, na.rm=T),
+              dep.count=length(mean), 
+              dep.ci=dep.sd*qt(0.975,df=dep.count-1)/sqrt(dep.count))
+
+graph2$Repetition=factor(graph2$Repetition)
+
+png(file = "SequenceSearch_Figure9_(OrganizationalDecision E1).png", bg = "white", type = c("cairo"), width=2400, height=2000, res=300)
+
+ggplot(graph2, aes(x=Repetition, y=dep.avg, shape=SeqType, colour=Arrangement, linetype=SeqType, group=interaction(Arrangement, SeqType)))+
+  geom_point(size=3, position = position_dodge(0))+
+  geom_errorbar(aes(ymax=dep.avg+dep.ci, 
+                    ymin=dep.avg-dep.ci),
+                    width=0, position = position_dodge(0))+
+  geom_line()+
+  theme(
+    panel.background= element_rect(fill=NA), # transparent panel
+    plot.background = element_rect(fill=NA, colour=NA), #transparent background
+    panel.grid=element_blank(), # remove panel grid
+    axis.ticks.x=element_blank(), # remove tick marks on x-axis
+    axis.ticks=element_line(colour="gray20"), # change colour of tick marks
+    panel.border = element_rect(fill="transparent", colour="gray60"), # change panel border colour
+    legend.background = element_rect(fill = "transparent", colour = "transparent"), # change legend background
+    axis.text = element_text(color="gray20"),
+    legend.key = element_rect(fill = "transparent", colour = "transparent"),
+    strip.background = element_rect(color="gray60", fill="transparent", linetype="solid")
+  )+
+  scale_colour_grey("Item Arrangement", labels=c("Unmoved", "Pre-Organization", "Post-Organization"))+
+  scale_x_discrete("Number of Repeated Items in Sequence")+
+  scale_y_continuous("Item Distance (pixels)", breaks=seq(0, 1000, 100))+
+  scale_shape_manual("Sequence Length", values=c(16,1))+
+  scale_linetype("Sequence Length")+
+  coord_cartesian(ylim=c(0, 750))
+
+dev.off()
+```
+
+
+
+
